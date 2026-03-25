@@ -1,6 +1,7 @@
 'use client';
 import React from 'react';
 import Image from 'next/image';
+import Link from 'next/link';
 import { ChevronDown, Menu, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -20,7 +21,7 @@ export function Header() {
 					"shadow-lg shadow-black/5"
 				)}>
 					{/* Logo */}
-					<a href="/" className="flex items-center">
+					<Link href="/" className="flex items-center">
 						<Image 
 							src="/pi-labslogo_black.svg"
 							alt="Pi Labs Logo"
@@ -28,7 +29,7 @@ export function Header() {
 							height={40}
 							className="h-8 w-auto dark:invert"
 						/>
-					</a>
+					</Link>
 
 					{/* Desktop Navigation Menu - Hidden on Mobile */}
 					<nav className="hidden lg:flex items-center gap-8">
