@@ -173,7 +173,47 @@ const INJECTED_STYLES = `
       stroke-linecap: round;
       transition: stroke-dashoffset 0.3s ease;
   }
+
+  /* Clockwork segments */
+  .clockwork-segment {
+      transition: opacity 0.3s ease, stroke-dashoffset 0.5s ease;
+  }
 `;
+
+const SEGMENT_COLORS = [
+  "#E8573A", "#F2A93B", "#4ECDC4", "#556FB5", "#C44DFF", "#0065F4", "#22C55E",
+];
+
+const CLOCKWORK_RADIUS = 260;
+const SEGMENT_COUNT = 7;
+
+interface Segment {
+  color: string;
+  width: number;
+  offset: number;
+  strokeW: number;
+}
+
+function generateSegments(radius: number, count: number): Segment[] {
+  const circumference = 2 * Math.PI * radius;
+  const gapSize = 6;
+  const totalGap = count * gapSize;
+  const usable = circumference - totalGap;
+  const segmentWidth = usable / count;
+
+  const segments: Segment[] = [];
+  let offset = 0;
+  for (let i = 0; i < count; i++) {
+    segments.push({
+      color: SEGMENT_COLORS[i % SEGMENT_COLORS.length],
+      width: segmentWidth,
+      offset,
+      strokeW: 4,
+    });
+    offset += segmentWidth + gapSize;
+  }
+  return segments;
+}
 
 export interface CinematicHeroProps extends React.HTMLAttributes<HTMLDivElement> {
   brandName?: string;
@@ -185,10 +225,12 @@ export interface CinematicHeroProps extends React.HTMLAttributes<HTMLDivElement>
   metricLabel?: string;
   ctaHeading?: string;
   ctaDescription?: string;
-  deviceType?: 'phone' | 'laptop';
+  deviceType?: 'phone' | 'laptop' | 'clockwork';
   logoSrc?: string;
   heroDescription?: string;
   timelineSteps?: Array<{ title: string; icon?: string }>;
+  clockworkImage?: string;
+  clockworkVideo?: string;
 }
 
 export function CinematicHero({ 
@@ -205,6 +247,8 @@ export function CinematicHero({
   logoSrc,
   heroDescription,
   timelineSteps,
+  clockworkImage = "/vox_logo.svg",
+  clockworkVideo,
   className, 
   ...props 
 }: CinematicHeroProps) {
@@ -213,6 +257,10 @@ export function CinematicHero({
   const mainCardRef = useRef<HTMLDivElement>(null);
   const mockupRef = useRef<HTMLDivElement>(null);
   const requestRef = useRef<number>(0);
+  const segmentRefs = useRef<(SVGCircleElement | null)[]>([]);
+  
+  const clockworkSegments = generateSegments(CLOCKWORK_RADIUS, SEGMENT_COUNT);
+  const clockworkCircumference = 2 * Math.PI * CLOCKWORK_RADIUS;
 
   // 1. High-Performance Mouse Interaction Logic (Using requestAnimationFrame)
   useEffect(() => {
@@ -261,9 +309,17 @@ export function CinematicHero({
       gsap.set(".hero-description", { autoAlpha: 0, y: 40, filter: "blur(10px)" });
       gsap.set(".main-card", { y: window.innerHeight + 200, autoAlpha: 1 });
       gsap.set([".card-left-text", ".card-right-text", ".mockup-scroll-wrapper", ".floating-badge", ".phone-widget"], { autoAlpha: 0 });
-      gsap.set(".timeline-node", { scale: 0, autoAlpha: 0 });
-      gsap.set(".timeline-connector", { strokeDashoffset: 2388 });
       gsap.set(".cta-wrapper", { autoAlpha: 0, scale: 0.8, filter: "blur(30px)" });
+
+      // Initialize clockwork segments (hidden with offset)
+      clockworkSegments.forEach((seg, i) => {
+        const el = segmentRefs.current[i];
+        if (el) {
+          el.style.strokeDasharray = `${seg.width} ${clockworkCircumference - seg.width}`;
+          el.style.strokeDashoffset = `${clockworkCircumference - seg.offset + seg.width}`;
+          gsap.set(el, { opacity: 0 });
+        }
+      });
 
       const introTl = gsap.timeline({ delay: 0.3 });
       introTl
@@ -293,10 +349,28 @@ export function CinematicHero({
         )
         .fromTo(".phone-widget", { y: 40, autoAlpha: 0, scale: 0.95 }, { y: 0, autoAlpha: 1, scale: 1, stagger: 0.15, ease: "back.out(1.2)", duration: 1.5 }, "-=1.5")
         .to(".progress-ring", { strokeDashoffset: 60, duration: 2, ease: "power3.inOut" }, "-=1.2")
-        .to(".counter-val", { innerHTML: metricValue, snap: { innerHTML: 1 }, duration: 2, ease: "expo.out" }, "-=2.0")
-        .to(".timeline-connector", { strokeDashoffset: 0, duration: 3, ease: "power2.inOut" }, "-=1.5")
-        .to(".timeline-node", { scale: 1, autoAlpha: 1, stagger: 0.25, ease: "back.out(2)", duration: 0.8 }, "-=2.5")
-        .fromTo(".floating-badge", { y: 100, autoAlpha: 0, scale: 0.7, rotationZ: -10 }, { y: 0, autoAlpha: 1, scale: 1, rotationZ: 0, ease: "back.out(1.5)", duration: 1.5, stagger: 0.2 }, "-=2.0")
+        .to(".counter-val", { innerHTML: metricValue, snap: { innerHTML: 1 }, duration: 2, ease: "expo.out" }, "-=2.0");
+      
+      // Animate clockwork segments sequentially - each starts only after the previous finishes
+      clockworkSegments.forEach((seg, i) => {
+        const el = segmentRefs.current[i];
+        if (el) {
+          // Small gap after previous segment, then fade + draw in parallel
+          scrollTl.to(el, { 
+            opacity: 1, 
+            duration: 0.3, 
+            ease: "power2.out" 
+          }, ">+=0.2"); // 0.2s breathing gap after prior segment ends
+          scrollTl.to(el, {
+            strokeDashoffset: `${clockworkCircumference - seg.offset}`,
+            duration: 0.5,
+            ease: "power2.out",
+          }, "<"); // runs in parallel with opacity
+        }
+      });
+
+      scrollTl
+        .fromTo(".floating-badge", { y: 100, autoAlpha: 0, scale: 0.7, rotationZ: -10 }, { y: 0, autoAlpha: 1, scale: 1, rotationZ: 0, ease: "back.out(1.5)", duration: 1.5, stagger: 0.2 }, "-=1.0")
         .fromTo(".card-left-text", { x: -50, autoAlpha: 0 }, { x: 0, autoAlpha: 1, ease: "power4.out", duration: 1.5 }, "-=1.5")
         .fromTo(".card-right-text", { x: 50, autoAlpha: 0, scale: 0.8 }, { x: 0, autoAlpha: 1, scale: 1, ease: "expo.out", duration: 1.5 }, "<")
         .to({}, { duration: 2.5 })
@@ -320,12 +394,13 @@ export function CinematicHero({
     }, containerRef);
 
     return () => ctx.revert();
-  },[metricValue]); 
+  },[metricValue, clockworkSegments, clockworkCircumference]); 
 
   return (
     <div
       ref={containerRef}
       className={cn("relative w-screen h-screen overflow-hidden flex items-center justify-center bg-background text-foreground font-sans antialiased", className)}
+      // @ts-expect-error - csstype version conflict
       style={{ perspective: "1500px" }}
       {...props}
     >
@@ -410,7 +485,7 @@ export function CinematicHero({
             </div>
 
             {/* 2. MIDDLE (Mobile) / CENTER (Desktop): DEVICE MOCKUP */}
-            <div className="mockup-scroll-wrapper order-2 lg:order-2 relative w-full h-[380px] lg:h-[600px] flex items-center justify-center z-10" style={{ perspective: "1000px" }}>
+            <div className="mockup-scroll-wrapper order-2 lg:order-2 relative w-full h-[420px] lg:h-[680px] flex items-center justify-center z-10" style={{ perspective: "1000px" }}>
               
               {/* Inner wrapper for safe CSS scaling that doesn't conflict with GSAP */}
               <div className="relative w-full h-full flex items-center justify-center transform scale-[0.65] md:scale-85 lg:scale-100">
@@ -538,6 +613,119 @@ export function CinematicHero({
                     <div className="relative w-[580px] h-3 bg-gradient-to-b from-[#2a2a2a] to-[#1a1a1a] rounded-b-xl mx-auto shadow-2xl" style={{ clipPath: 'polygon(8% 0%, 92% 0%, 100% 100%, 0% 100%)' }}>
                       <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
                     </div>
+                  </div>
+                ) : deviceType === 'clockwork' ? (
+                  /* Clockwork Animation */
+                  <div
+                    ref={mockupRef}
+                    className="relative will-change-transform transform-style-3d"
+                    style={{ width: '640px', height: '640px' }}
+                  >
+                    {/* Clockwork Ring SVG */}
+                    <svg
+                      width="640"
+                      height="640"
+                      viewBox="0 0 560 560"
+                      className="absolute z-20 pointer-events-none"
+                      style={{
+                        top: "50%",
+                        left: "50%",
+                        transform: "translate(-50%, -50%) rotate(-90deg)",
+                      }}
+                    >
+                      {/* Base track */}
+                      <circle
+                        cx="280" cy="280" r={CLOCKWORK_RADIUS}
+                        fill="none"
+                        stroke="hsla(0, 0%, 100%, 0.06)"
+                        strokeWidth="2"
+                      />
+                      {/* Glowing segments */}
+                      {clockworkSegments.map((seg, i) => (
+                        <circle
+                          key={i}
+                          ref={(el) => { segmentRefs.current[i] = el; }}
+                          cx="280" cy="280" r={CLOCKWORK_RADIUS}
+                          fill="none"
+                          stroke={seg.color}
+                          strokeWidth={seg.strokeW}
+                          strokeLinecap="round"
+                          className="clockwork-segment"
+                          style={{
+                            filter: `drop-shadow(0 0 8px ${seg.color}) drop-shadow(0 0 20px ${seg.color}66) drop-shadow(0 0 40px ${seg.color}33)`,
+                          }}
+                        />
+                      ))}
+                    </svg>
+
+                    {/* Center image circle */}
+                    <div
+                      className="absolute rounded-full overflow-hidden flex items-center justify-center"
+                      style={{
+                        width: "510px",
+                        height: "510px",
+                        top: "50%",
+                        left: "50%",
+                        transform: "translate(-50%, -50%)",
+                        boxShadow: `
+                          0 0 40px 8px hsla(32, 95%, 55%, 0.2),
+                          0 0 80px 20px hsla(170, 60%, 50%, 0.1)
+                        `,
+                        background: "white",
+                      }}
+                    >
+                      {clockworkVideo ? (
+                        <video
+                          src={clockworkVideo}
+                          autoPlay
+                          loop
+                          muted
+                          playsInline
+                          className="absolute inset-0 w-full h-full object-cover"
+                          style={{ transform: 'scale(0.7)', transformOrigin: 'center' }}
+                        />
+                      ) : (
+                        <Image
+                          src={clockworkImage}
+                          alt="Clockwork center"
+                          width={200}
+                          height={200}
+                          className="object-contain drop-shadow-2xl"
+                        />
+                      )}
+                      {/* Glass overlay */}
+                      <div
+                        className="absolute inset-0 rounded-full pointer-events-none"
+                        style={{
+                          background: `
+                            radial-gradient(ellipse at 30% 20%, hsla(0, 0%, 100%, 0.15) 0%, transparent 50%),
+                            radial-gradient(ellipse at 70% 80%, hsla(220, 60%, 10%, 0.4) 0%, transparent 50%)
+                          `,
+                        }}
+                      />
+                      {/* Scan line effect */}
+                      <div
+                        className="absolute inset-0 rounded-full pointer-events-none overflow-hidden"
+                        style={{
+                          background: "repeating-linear-gradient(0deg, transparent, transparent 3px, hsla(0,0%,100%,0.02) 3px, hsla(0,0%,100%,0.02) 4px)",
+                        }}
+                      />
+                    </div>
+
+                    {/* Ambient glow */}
+                    <div
+                      className="absolute rounded-full pointer-events-none -z-10"
+                      style={{
+                        width: "720px",
+                        height: "720px",
+                        top: "50%",
+                        left: "50%",
+                        transform: "translate(-50%, -50%)",
+                        background:
+                          "radial-gradient(circle, hsla(32, 95%, 55%, 0.12) 0%, hsla(170, 60%, 50%, 0.06) 40%, transparent 70%)",
+                        filter: "blur(40px)",
+                      }}
+                    />
                   </div>
                 ) : (
                   /* iPhone Bezel */

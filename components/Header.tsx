@@ -90,19 +90,30 @@ export function Header() {
 						</div>
 
 						{/* Other Menu Items */}
-						{['Resources', 'Blogs', 'Company'].map((item) => (
-							<button
-								key={item}
-								className={cn(
-									"text-sm font-medium",
-									"text-gray-800 dark:text-gray-200",
-									"hover:text-[#0065F4] transition-colors"
-								)}
-							>
-								{item}
-							</button>
-						))}
-
+					{['Resources', 'Company'].map((item) => (
+						<button
+							key={item}
+							className={cn(
+								"text-sm font-medium",
+								"text-gray-800 dark:text-gray-200",
+								"hover:text-[#0065F4] transition-colors"
+							)}
+						>
+							{item}
+						</button>
+					))}
+					
+					{/* Blogs Link */}
+					<Link
+						href="/blog"
+						className={cn(
+							"text-sm font-medium",
+							"text-gray-800 dark:text-gray-200",
+							"hover:text-[#0065F4] transition-colors"
+						)}
+					>
+						Blogs
+					</Link>
 						{/* Contact Button */}
 						<button className={cn(
 							"px-6 py-2 rounded-lg",
@@ -204,20 +215,31 @@ export function Header() {
 
 							{/* Other Menu Items */}
 							<div className="space-y-2 mb-6">
-								{['Resources', 'Blogs', 'Company'].map((item) => (
-									<button
-										key={item}
-										className={cn(
-											"w-full text-left py-3 text-base font-medium",
-											"text-gray-800 dark:text-gray-200",
-											"hover:text-[#0065F4] transition-colors"
-										)}
-									>
-										{item}
-									</button>
-								))}
-							</div>
-
+							{['Resources', 'Company'].map((item) => (
+								<button
+									key={item}
+									className={cn(
+										"w-full text-left py-3 text-base font-medium",
+										"text-gray-800 dark:text-gray-200",
+										"hover:text-[#0065F4] transition-colors"
+									)}
+								>
+									{item}
+								</button>
+							))}
+							
+							{/* Blogs Link */}
+							<Link
+								href="/blog"
+								onClick={() => setMobileMenuOpen(false)}
+								className={cn(
+									"block w-full text-left py-3 text-base font-medium",
+									"text-gray-800 dark:text-gray-200",
+									"hover:text-[#0065F4] transition-colors"
+								)}
+							>
+								Blogs
+							</Link>
 							{/* Contact Button */}
 							<button 
 								className={cn(
@@ -229,6 +251,7 @@ export function Header() {
 							>
 								Contact Us
 							</button>
+						</div>
 						</div>
 					</div>
 				</>

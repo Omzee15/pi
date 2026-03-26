@@ -120,3 +120,68 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* Hero Background Styles */
+.hero-bg {
+  background-color: #05050A;
+  position: relative;
+}
+
+.hero-bg::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 100vh;
+  background:
+    /* Primary radial glow - focused from center top */
+    radial-gradient(
+      ellipse 40% 40% at 50% 0%,
+      rgba(51, 85, 255, 0.4) 0%,
+      rgba(51, 85, 255, 0.2) 30%,
+      rgba(51, 85, 255, 0.05) 60%,
+      transparent 80%
+    ),
+    /* Secondary softer outer glow */
+    radial-gradient(
+      ellipse 50% 50% at 50% 0%,
+      rgba(51, 85, 255, 0.15) 0%,
+      rgba(51, 85, 255, 0.05) 50%,
+      transparent 70%
+    );
+  pointer-events: none;
+  z-index: 0;
+}
+
+.hero-bg::after {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 100vh;
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+  background-size: 60px 60px;
+  mask-image: linear-gradient(
+    to bottom,
+    rgba(0, 0, 0, 0.5) 0%,
+    rgba(0, 0, 0, 0.3) 50%,
+    transparent 100%
+  );
+  -webkit-mask-image: linear-gradient(
+    to bottom,
+    rgba(0, 0, 0, 0.5) 0%,
+    rgba(0, 0, 0, 0.3) 50%,
+    transparent 100%
+  );
+  pointer-events: none;
+  z-index: 0;
+}
+
+.hero-bg > * {
+  position: relative;
+  z-index: 1;
+}

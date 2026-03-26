@@ -1,8 +1,11 @@
 'use client';
 import React from 'react';
-import { cn } from '@/lib/utils';
 import Lenis from 'lenis'
 import { ZoomParallax } from "@/components/ui/zoom-parallax";
+import { BlogShowcase } from "@/components/ui/BlogShowcase";
+import { FAQ } from "@/components/ui/FAQ";
+import { HomepageEnding } from "@/components/ui/HomepageEnding";
+import { Footer } from "@/components/Footer";
 
 export default function DefaultDemo() {
 	React.useEffect( () => {
@@ -50,19 +53,38 @@ export default function DefaultDemo() {
 
 	return (
 		<main className="min-h-screen w-full">
-			<div className="relative flex h-[50vh] items-center justify-center">
-				{/* Radial spotlight */}
-				<div
-					aria-hidden="true"
-					className={cn(
-						'pointer-events-none absolute -top-1/2 left-1/2 h-[120vmin] w-[120vmin] -translate-x-1/2 rounded-full',
-						'bg-[radial-gradient(ellipse_at_center,--theme(--color-foreground/.1),transparent_50%)]',
-						'blur-[30px]',
-					)}
-				/>
+			{/* Hero Section with Dark Purple Glow Background - wraps the parallax */}
+			<div className="hero-bg">
+				<div className="h-[60vh]" />
+				<ZoomParallax images={images} />
 			</div>
-			<ZoomParallax images={images} />
-			<div className="h-[50vh]"/>
+			
+			{/* Blog Section - continues after zoom effect */}
+			<section className="relative bg-white pt-16 md:pt-24">
+				<div className="py-4 md:py-6">
+					<div className="max-w-7xl mx-auto px-4 md:px-6">
+						<h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-center mb-2 text-foreground">
+							Latest Insights
+						</h2>
+						<p className="text-muted-foreground text-center max-w-2xl mx-auto mb-1">
+							Discover the latest in AI, robotics, and intelligent technology from our team
+						</p>
+					</div>
+					<BlogShowcase />
+				</div>
+			</section>
+
+			{/* FAQ Section */}
+			<FAQ />
+
+			{/* Homepage Ending Animation */}
+			<HomepageEnding />
+
+			{/* Spacer */}
+			<div className="h-24 md:h-32 bg-white" />
+
+			{/* Footer */}
+			<Footer />
 		</main>
 	);
 }

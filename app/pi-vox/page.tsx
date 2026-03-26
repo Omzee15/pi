@@ -1,5 +1,7 @@
 'use client';
 import { CinematicHero } from "@/components/ui/cinematic-landing-hero";
+import { ScrollClockwork } from "@/components/ui/ScrollClockwork";
+import { Footer } from "@/components/Footer";
 
 export default function PiVoxPage() {
   const timelineSteps = [
@@ -9,6 +11,34 @@ export default function PiVoxPage() {
     { title: "Context-aware translation" },
     { title: "Seamless translation" },
     { title: "Report generator" },
+  ];
+
+  const clockworkSlides = [
+    {
+      image: "https://images.unsplash.com/photo-1589254065878-42c9da997008?w=800&h=800&fit=crop",
+      title: "Speech Recognition",
+      description: "Advanced AI-powered transcription that handles multiple languages and accents with exceptional accuracy.",
+    },
+    {
+      image: "https://images.unsplash.com/photo-1516321497487-e288fb19713f?w=800&h=800&fit=crop",
+      title: "Speaker Diarization",
+      description: "Automatically identify and separate different speakers in audio recordings for clear attribution.",
+    },
+    {
+      image: "https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=800&h=800&fit=crop",
+      title: "Smart Transliteration",
+      description: "Convert speech across scripts while preserving meaning, context, and linguistic nuances.",
+    },
+    {
+      image: "https://images.unsplash.com/photo-1504868584819-f8e8b4b6d7e3?w=800&h=800&fit=crop",
+      title: "Real-time Translation",
+      description: "Seamless multilingual translation powered by neural networks for instant understanding.",
+    },
+    {
+      image: "https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=800&h=800&fit=crop",
+      title: "Actionable Reports",
+      description: "Generate comprehensive intelligence reports from audio data for informed decision-making.",
+    },
   ];
 
   return (
@@ -31,9 +61,12 @@ export default function PiVoxPage() {
         metricLabel="Voice Quality"
         ctaHeading="Experience the future."
         ctaDescription="Join creators worldwide who trust Pi-Vox for professional-grade voice synthesis."
-        deviceType="laptop"
+        deviceType="clockwork"
+        clockworkVideo="/hero-vox-2.mp4"
         timelineSteps={timelineSteps}
       />
+      <ScrollClockwork slides={clockworkSlides} />
+      <Footer />
     </div>
   );
 }
