@@ -136,6 +136,7 @@
   height: 100vh;
   background: url('/globehighlight.png') center center / 75% auto no-repeat;
   pointer-events: none;
+  background-size: cover;
   z-index: 0;
 }
 

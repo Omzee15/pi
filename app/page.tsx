@@ -7,12 +7,8 @@ import { BlogShowcase } from "@/components/ui/BlogShowcase";
 import { FAQ } from "@/components/ui/FAQ";
 import { HomepageEnding } from "@/components/ui/HomepageEnding";
 import { Footer } from "@/components/Footer";
-import { useHeaderLogo } from "@/lib/header-logo-context";
 
 export default function DefaultDemo() {
-	const heroLogoRef = React.useRef<HTMLDivElement>(null);
-	const { setShowHeaderLogo } = useHeaderLogo();
-
 	React.useEffect( () => {
         const lenis = new Lenis()
        
@@ -23,39 +19,6 @@ export default function DefaultDemo() {
 
         requestAnimationFrame(raf)
     },[])
-
-	// Track hero logo scroll position to trigger header logo
-	React.useEffect(() => {
-		// Header is fixed at top-6 (24px), its inner div is ~72px tall → bottom ≈ 96px
-		const HEADER_BOTTOM = 96;
-		const FADE_START = 200; // start fading hero logo 200px above header bottom
-
-		const handleScroll = () => {
-			if (!heroLogoRef.current) return;
-			const rect = heroLogoRef.current.getBoundingClientRect();
-			const logoTop = rect.top;
-
-			if (logoTop > FADE_START) {
-				// Fully visible, header logo hidden
-				heroLogoRef.current.style.opacity = '1';
-				setShowHeaderLogo(false);
-			} else if (logoTop > HEADER_BOTTOM) {
-				// Fading zone
-				const progress = (logoTop - HEADER_BOTTOM) / (FADE_START - HEADER_BOTTOM);
-				heroLogoRef.current.style.opacity = String(progress);
-				setShowHeaderLogo(false);
-			} else {
-				// Hero logo fully scrolled into header zone
-				heroLogoRef.current.style.opacity = '0';
-				setShowHeaderLogo(true);
-			}
-		};
-
-		window.addEventListener('scroll', handleScroll, { passive: true });
-		// Run once on mount
-		handleScroll();
-		return () => window.removeEventListener('scroll', handleScroll);
-	}, [setShowHeaderLogo]);
 
 
 	const images = [
@@ -93,26 +56,15 @@ export default function DefaultDemo() {
 		<main className="min-h-screen w-full">
 			{/* Hero Section with Dark Purple Glow Background - wraps the parallax */}
 			<div className="hero-bg">
-				{/* Hero spacer with floating logo — aligned to header logo position */}
-				<div className="h-[65vh] flex items-center">
-					<div className="w-[95%] max-w-7xl mx-auto px-6">
-						<div
-							ref={heroLogoRef}
-							style={{
-								transition: 'opacity 0.1s linear',
-								willChange: 'opacity',
-							}}
-						>
-							<Image
-								src="/pilabs-whitesvg.svg"
-								alt="Pi Labs"
-								width={480}
-								height={140}
-								className="w-[300px] md:w-[420px] h-auto"
-								priority
-							/>
-						</div>
-					</div>
+				<div className="h-[65vh] flex items-center justify-center">
+					{/* <Image
+						src="/pi-labslogo_white-text.svg"
+						alt="Pi Labs"
+						width={500}
+						height={116}
+						className="w-[280px] md:w-[400px] lg:w-[500px] h-auto"
+						priority
+					/> */}
 				</div>
 				<ZoomParallax images={images} />
 			</div>
