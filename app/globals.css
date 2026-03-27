@@ -134,22 +134,7 @@
   left: 0;
   right: 0;
   height: 100vh;
-  background:
-    /* Primary radial glow - focused from center top */
-    radial-gradient(
-      ellipse 40% 40% at 50% 0%,
-      rgba(51, 85, 255, 0.4) 0%,
-      rgba(51, 85, 255, 0.2) 30%,
-      rgba(51, 85, 255, 0.05) 60%,
-      transparent 80%
-    ),
-    /* Secondary softer outer glow */
-    radial-gradient(
-      ellipse 50% 50% at 50% 0%,
-      rgba(51, 85, 255, 0.15) 0%,
-      rgba(51, 85, 255, 0.05) 50%,
-      transparent 70%
-    );
+  background: url('/globehighlight.png') center center / 75% auto no-repeat;
   pointer-events: none;
   z-index: 0;
 }

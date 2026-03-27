@@ -4,10 +4,12 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { ChevronDown, Menu, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useHeaderLogo } from '@/lib/header-logo-context';
 
 export function Header() {
 	const [productsOpen, setProductsOpen] = React.useState(false);
 	const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false);
+	const { showHeaderLogo } = useHeaderLogo();
 
 	return (
 		<>
@@ -20,7 +22,7 @@ export function Header() {
 					"rounded-2xl",
 					"shadow-lg shadow-black/5"
 				)}>
-					{/* Logo */}
+					{/* Logo — fades in when hero logo has scrolled up to header */}
 					<Link href="/" className="flex items-center">
 						<Image 
 							src="/pi-labslogo_black.svg"
@@ -28,6 +30,11 @@ export function Header() {
 							width={120}
 							height={40}
 							className="h-8 w-auto dark:invert"
+							style={{
+								opacity: showHeaderLogo ? 1 : 0,
+								transition: 'opacity 0.4s ease',
+								pointerEvents: showHeaderLogo ? 'auto' : 'none',
+							}}
 						/>
 					</Link>
 

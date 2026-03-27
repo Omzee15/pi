@@ -228,7 +228,7 @@ export interface CinematicHeroProps extends React.HTMLAttributes<HTMLDivElement>
   deviceType?: 'phone' | 'laptop' | 'clockwork';
   logoSrc?: string;
   heroDescription?: string;
-  timelineSteps?: Array<{ title: string; icon?: string }>;
+  timelineSteps?: Array<{ title: string; description?: string; icon?: string }>;
   clockworkImage?: string;
   clockworkVideo?: string;
 }
@@ -258,8 +258,13 @@ export function CinematicHero({
   const mockupRef = useRef<HTMLDivElement>(null);
   const requestRef = useRef<number>(0);
   const segmentRefs = useRef<(SVGCircleElement | null)[]>([]);
+  const timelineTextsRef = useRef<(HTMLDivElement | null)[]>([]);
+  const clockworkIntroRef = useRef<HTMLDivElement>(null);
   
-  const clockworkSegments = generateSegments(CLOCKWORK_RADIUS, SEGMENT_COUNT);
+  const effectiveSegmentCount = (deviceType === 'clockwork' && timelineSteps && timelineSteps.length > 0)
+    ? timelineSteps.length
+    : SEGMENT_COUNT;
+  const clockworkSegments = generateSegments(CLOCKWORK_RADIUS, effectiveSegmentCount);
   const clockworkCircumference = 2 * Math.PI * CLOCKWORK_RADIUS;
 
   // 1. High-Performance Mouse Interaction Logic (Using requestAnimationFrame)
@@ -332,9 +337,9 @@ export function CinematicHero({
         scrollTrigger: {
           trigger: containerRef.current,
           start: "top top",
-          end: "+=7000",
+          end: "+=10000",
           pin: true,
-          scrub: 1,
+          scrub: 2,
           anticipatePin: 1,
         },
       });
@@ -347,32 +352,64 @@ export function CinematicHero({
           { y: 300, z: -500, rotationX: 50, rotationY: -30, autoAlpha: 0, scale: 0.6 },
           { y: 0, z: 0, rotationX: 0, rotationY: 0, autoAlpha: 1, scale: 1, ease: "expo.out", duration: 2.5 }, "-=0.8"
         )
+        // For clockwork: slide in the left text panel (intro) alongside the mockup
+        .fromTo(".card-left-text",
+          { x: -60, autoAlpha: 0 },
+          { x: 0, autoAlpha: 1, ease: "expo.out", duration: 2 }, "-=2"
+        )
         .fromTo(".phone-widget", { y: 40, autoAlpha: 0, scale: 0.95 }, { y: 0, autoAlpha: 1, scale: 1, stagger: 0.15, ease: "back.out(1.2)", duration: 1.5 }, "-=1.5")
         .to(".progress-ring", { strokeDashoffset: 60, duration: 2, ease: "power3.inOut" }, "-=1.2")
         .to(".counter-val", { innerHTML: metricValue, snap: { innerHTML: 1 }, duration: 2, ease: "expo.out" }, "-=2.0");
       
-      // Animate clockwork segments sequentially - each starts only after the previous finishes
+      // Clockwork segments: evenly spaced across timeline (matching ScrollClockwork logic)
+      const isClockwork = deviceType === 'clockwork';
+      const steps = timelineSteps && timelineSteps.length > 0 ? timelineSteps : [];
+
+      if (isClockwork && steps.length > 0) {
+        // Intro label visible, all step texts hidden
+        gsap.set(clockworkIntroRef.current, { opacity: 1, y: 0 });
+        steps.forEach((_, i) => {
+          const text = timelineTextsRef.current[i];
+          if (text) gsap.set(text, { opacity: 0, y: 40 });
+        });
+      }
+
+      scrollTl.addLabel("clockworkStart");
+
       clockworkSegments.forEach((seg, i) => {
         const el = segmentRefs.current[i];
         if (el) {
-          // Small gap after previous segment, then fade + draw in parallel
-          scrollTl.to(el, { 
-            opacity: 1, 
-            duration: 0.3, 
-            ease: "power2.out" 
-          }, ">+=0.2"); // 0.2s breathing gap after prior segment ends
+          const pos = `clockworkStart+=${i * 1.5}`;
+          scrollTl.to(el, { opacity: 1, duration: 0.3, ease: "power2.out" }, pos);
           scrollTl.to(el, {
             strokeDashoffset: `${clockworkCircumference - seg.offset}`,
             duration: 0.5,
             ease: "power2.out",
-          }, "<"); // runs in parallel with opacity
+          }, pos);
         }
       });
 
+      // Cycle left-text steps in sync with each segment (like ScrollClockwork)
+      if (isClockwork && steps.length > 0) {
+        steps.forEach((_, i) => {
+          const text = timelineTextsRef.current[i];
+          if (!text) return;
+          // Fade out intro label and fade in step 0 with first segment
+          if (i === 0) {
+            scrollTl.to(clockworkIntroRef.current, { opacity: 0, y: -30, duration: 0.4, ease: "power2.in" }, `clockworkStart+=0`);
+            scrollTl.to(text, { opacity: 1, y: 0, duration: 0.4, ease: "power2.out" }, `clockworkStart+=0.2`);
+          } else {
+            scrollTl.to(text, { opacity: 1, y: 0, duration: 0.4, ease: "power2.out" }, `clockworkStart+=${i * 1.5 - 0.35}`);
+          }
+          if (i < steps.length - 1) {
+            scrollTl.to(text, { opacity: 0, y: -30, duration: 0.4, ease: "power2.in" }, `clockworkStart+=${i * 1.5 + 0.6}`);
+          }
+        });
+      }
+
       scrollTl
         .fromTo(".floating-badge", { y: 100, autoAlpha: 0, scale: 0.7, rotationZ: -10 }, { y: 0, autoAlpha: 1, scale: 1, rotationZ: 0, ease: "back.out(1.5)", duration: 1.5, stagger: 0.2 }, "-=1.0")
-        .fromTo(".card-left-text", { x: -50, autoAlpha: 0 }, { x: 0, autoAlpha: 1, ease: "power4.out", duration: 1.5 }, "-=1.5")
-        .fromTo(".card-right-text", { x: 50, autoAlpha: 0, scale: 0.8 }, { x: 0, autoAlpha: 1, scale: 1, ease: "expo.out", duration: 1.5 }, "<")
+        .fromTo(".card-right-text", { x: 50, autoAlpha: 0, scale: 0.8 }, { x: 0, autoAlpha: 1, scale: 1, ease: "expo.out", duration: 1.5 }, "-=1.5")
         .to({}, { duration: 2.5 })
         .set(".hero-text-wrapper", { autoAlpha: 0 })
         .set(".cta-wrapper", { autoAlpha: 1 }) 
@@ -394,13 +431,12 @@ export function CinematicHero({
     }, containerRef);
 
     return () => ctx.revert();
-  },[metricValue, clockworkSegments, clockworkCircumference]); 
+  },[metricValue, clockworkSegments, clockworkCircumference, deviceType, timelineSteps]); 
 
   return (
     <div
       ref={containerRef}
       className={cn("relative w-screen h-screen overflow-hidden flex items-center justify-center bg-background text-foreground font-sans antialiased", className)}
-      // @ts-expect-error - csstype version conflict
       style={{ perspective: "1500px" }}
       {...props}
     >
@@ -475,14 +511,7 @@ export function CinematicHero({
           <div className="card-sheen" aria-hidden="true" />
 
           {/* DYNAMIC RESPONSIVE GRID: Flex-col on mobile to force order, Grid on desktop */}
-          <div className="relative w-full h-full max-w-7xl mx-auto px-4 lg:px-12 flex flex-col justify-evenly lg:grid lg:grid-cols-3 items-center lg:gap-8 z-10 py-6 lg:py-0">
-            
-            {/* 1. TOP (Mobile) / RIGHT (Desktop): BRAND NAME */}
-            <div className="card-right-text gsap-reveal order-1 lg:order-3 flex justify-center lg:justify-end z-20 w-full">
-              <h2 className="text-6xl md:text-[6rem] lg:text-[8rem] font-black uppercase tracking-tighter text-card-silver-matte lg:mt-0">
-                {brandName}
-              </h2>
-            </div>
+          <div className="relative w-full h-full max-w-7xl mx-auto px-4 lg:px-12 flex flex-col justify-evenly lg:grid lg:grid-cols-2 items-center lg:gap-8 z-10 py-6 lg:py-0">
 
             {/* 2. MIDDLE (Mobile) / CENTER (Desktop): DEVICE MOCKUP */}
             <div className="mockup-scroll-wrapper order-2 lg:order-2 relative w-full h-[420px] lg:h-[680px] flex items-center justify-center z-10" style={{ perspective: "1000px" }}>
@@ -619,12 +648,12 @@ export function CinematicHero({
                   <div
                     ref={mockupRef}
                     className="relative will-change-transform transform-style-3d"
-                    style={{ width: '640px', height: '640px' }}
+                    style={{ width: '780px', height: '780px' }}
                   >
                     {/* Clockwork Ring SVG */}
                     <svg
-                      width="640"
-                      height="640"
+                      width="780"
+                      height="780"
                       viewBox="0 0 560 560"
                       className="absolute z-20 pointer-events-none"
                       style={{
@@ -662,27 +691,21 @@ export function CinematicHero({
                     <div
                       className="absolute rounded-full overflow-hidden flex items-center justify-center"
                       style={{
-                        width: "510px",
-                        height: "510px",
+                        width: "640px",
+                        height: "640px",
                         top: "50%",
                         left: "50%",
                         transform: "translate(-50%, -50%)",
-                        boxShadow: `
-                          0 0 40px 8px hsla(32, 95%, 55%, 0.2),
-                          0 0 80px 20px hsla(170, 60%, 50%, 0.1)
-                        `,
-                        background: "white",
+                        filter: "drop-shadow(0 0 40px rgba(51, 85, 255, 0.5)) drop-shadow(0 0 80px rgba(51, 85, 255, 0.25))",
                       }}
                     >
                       {clockworkVideo ? (
                         <video
                           src={clockworkVideo}
                           autoPlay
-                          loop
                           muted
                           playsInline
-                          className="absolute inset-0 w-full h-full object-cover"
-                          style={{ transform: 'scale(0.7)', transformOrigin: 'center' }}
+                          className="absolute inset-0 w-full h-full object-contain"
                         />
                       ) : (
                         <Image
@@ -693,23 +716,6 @@ export function CinematicHero({
                           className="object-contain drop-shadow-2xl"
                         />
                       )}
-                      {/* Glass overlay */}
-                      <div
-                        className="absolute inset-0 rounded-full pointer-events-none"
-                        style={{
-                          background: `
-                            radial-gradient(ellipse at 30% 20%, hsla(0, 0%, 100%, 0.15) 0%, transparent 50%),
-                            radial-gradient(ellipse at 70% 80%, hsla(220, 60%, 10%, 0.4) 0%, transparent 50%)
-                          `,
-                        }}
-                      />
-                      {/* Scan line effect */}
-                      <div
-                        className="absolute inset-0 rounded-full pointer-events-none overflow-hidden"
-                        style={{
-                          background: "repeating-linear-gradient(0deg, transparent, transparent 3px, hsla(0,0%,100%,0.02) 3px, hsla(0,0%,100%,0.02) 4px)",
-                        }}
-                      />
                     </div>
 
                     {/* Ambient glow */}
@@ -827,15 +833,52 @@ export function CinematicHero({
             </div>
 
             {/* 3. BOTTOM (Mobile) / LEFT (Desktop): ACCOUNTABILITY TEXT */}
-            <div className="card-left-text gsap-reveal order-3 lg:order-1 flex flex-col justify-center text-center lg:text-left z-20 w-full lg:max-w-none px-4 lg:px-0">
-              <h3 className="text-[#0065F4] text-2xl md:text-3xl lg:text-4xl font-bold mb-0 lg:mb-5 tracking-tight">
-                {cardHeading}
-              </h3>
-              {/* HIDDEN ON MOBILE (added hidden md:block) */}
-              <p className="hidden md:block text-[#0065F4]/70 text-sm md:text-base lg:text-lg font-normal leading-relaxed mx-auto lg:mx-0 max-w-sm lg:max-w-none">
-                {cardDescription}
-              </p>
-            </div>
+            {deviceType === 'clockwork' && timelineSteps && timelineSteps.length > 0 ? (
+              <div className="card-left-text order-3 lg:order-1 relative z-20 w-full lg:max-w-none px-4 lg:px-0 lg:-ml-16 min-h-[300px] lg:h-[420px]">
+                {/* Intro: logo + "Features:" label — visible before any segment appears */}
+                <div
+                  ref={clockworkIntroRef}
+                  className="absolute inset-0 flex flex-col justify-center text-left"
+                  style={{ opacity: 0 }}
+                >
+                  {logoSrc && (
+                    <img src={logoSrc} alt="Logo" className="h-16 lg:h-20 w-auto mb-5 mr-auto" />
+                  )}
+                  <span className="text-sm font-mono uppercase tracking-[0.3em] text-[#0065F4]/60 mb-2">Discover</span>
+                  <h3 className="text-[#0065F4] text-4xl lg:text-6xl font-black tracking-tight">Features</h3>
+                </div>
+                {/* Individual feature texts — each fades in with its segment */}
+                {timelineSteps.map((step, i) => (
+                  <div
+                    key={i}
+                    ref={(el) => { timelineTextsRef.current[i] = el; }}
+                    className="absolute inset-0 flex flex-col justify-center text-left"
+                    style={{ opacity: 0 }}
+                  >
+                    <span className="text-sm font-mono uppercase tracking-[0.3em] text-[#0065F4]/60 mb-3">
+                      {String(i + 1).padStart(2, '0')} / {String(timelineSteps.length).padStart(2, '0')}
+                    </span>
+                    <h3 className="text-[#0065F4] text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight leading-tight mb-4">
+                      {step.title}
+                    </h3>
+                    {step.description && (
+                      <p className="text-[#0065F4]/70 text-lg md:text-xl leading-relaxed max-w-md">
+                        {step.description}
+                      </p>
+                    )}
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="card-left-text gsap-reveal order-3 lg:order-1 flex flex-col justify-center text-center lg:text-left z-20 w-full lg:max-w-none px-4 lg:px-0 lg:-ml-16">
+                <h3 className="text-[#0065F4] text-2xl md:text-3xl lg:text-4xl font-bold mb-0 lg:mb-5 tracking-tight">
+                  {cardHeading}
+                </h3>
+                <p className="hidden md:block text-[#0065F4]/70 text-sm md:text-base lg:text-lg font-normal leading-relaxed mx-auto lg:mx-0 max-w-sm lg:max-w-none">
+                  {cardDescription}
+                </p>
+              </div>
+            )}
 
           </div>
         </div>

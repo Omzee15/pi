@@ -168,6 +168,7 @@ export const HomepageEnding = () => {
             {layer1Images.map((src, i) => (
               <div
                 key={i}
+                className="flex items-center"
                 style={{
                   gridColumn: i % 2 === 0 ? 1 : -2,
                   gridRow: Math.floor(i / 2) + 1,
@@ -196,6 +197,7 @@ export const HomepageEnding = () => {
             {layer2Images.map((src, i) => (
               <div
                 key={i}
+                className="flex items-center"
                 style={{
                   gridColumn: i % 2 === 0 ? 2 : -3,
                   gridRow: Math.floor(i / 2) + 1,
@@ -222,7 +224,7 @@ export const HomepageEnding = () => {
             }}
           >
             {layer3Images[0] && (
-              <div style={{ gridColumn: 3, gridRow: 1 }}>
+              <div className="flex items-center" style={{ gridColumn: 3, gridRow: 1 }}>
                 <img
                   src={layer3Images[0]}
                   alt=""
@@ -231,7 +233,7 @@ export const HomepageEnding = () => {
               </div>
             )}
             {layer3Images[1] && (
-              <div style={{ gridColumn: 3, gridRow: 3 }}>
+              <div className="flex items-center" style={{ gridColumn: 3, gridRow: 3 }}>
                 <img
                   src={layer3Images[1]}
                   alt=""

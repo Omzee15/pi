@@ -1,43 +1,32 @@
 'use client';
 import { CinematicHero } from "@/components/ui/cinematic-landing-hero";
-import { ScrollClockwork } from "@/components/ui/ScrollClockwork";
 import { Footer } from "@/components/Footer";
 
 export default function PiVoxPage() {
   const timelineSteps = [
-    { title: "Accurate speech to text" },
-    { title: "Intelligent transliteration" },
-    { title: "Unified output pipeline" },
-    { title: "Context-aware translation" },
-    { title: "Seamless translation" },
-    { title: "Report generator" },
-  ];
-
-  const clockworkSlides = [
     {
-      image: "https://images.unsplash.com/photo-1589254065878-42c9da997008?w=800&h=800&fit=crop",
-      title: "Speech Recognition",
-      description: "Advanced AI-powered transcription that handles multiple languages and accents with exceptional accuracy.",
+      title: "Accurate speech to text",
+      description: "Breaks long-form audio into structured, searchable text across multiple languages with precise timestamps — with special support for Indian languages.",
     },
     {
-      image: "https://images.unsplash.com/photo-1516321497487-e288fb19713f?w=800&h=800&fit=crop",
-      title: "Speaker Diarization",
-      description: "Automatically identify and separate different speakers in audio recordings for clear attribution.",
+      title: "Intelligent transliteration",
+      description: "Converts native script into Roman script while retaining phonetic accuracy — ideal for investigators unfamiliar with local languages.",
     },
     {
-      image: "https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=800&h=800&fit=crop",
-      title: "Smart Transliteration",
-      description: "Convert speech across scripts while preserving meaning, context, and linguistic nuances.",
+      title: "Unified output pipeline",
+      description: "All outputs — transcription, translation, and transliteration — are delivered via a single, easy-to-integrate API.",
     },
     {
-      image: "https://images.unsplash.com/photo-1504868584819-f8e8b4b6d7e3?w=800&h=800&fit=crop",
-      title: "Real-time Translation",
-      description: "Seamless multilingual translation powered by neural networks for instant understanding.",
+      title: "Context-aware multi-language translation",
+      description: "Supports translation across Indian and global languages, ensuring accuracy, cultural nuance, and context-sensitive phrasing so messages preserve meaning, tone, and intent.",
     },
     {
-      image: "https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=800&h=800&fit=crop",
-      title: "Actionable Reports",
-      description: "Generate comprehensive intelligence reports from audio data for informed decision-making.",
+      title: "Seamless translation",
+      description: "Translates audio content into Hindi and English, preserving tone and context for better comprehension.",
+    },
+    {
+      title: "Report generator",
+      description: "Auto-generates downloadable PDFs of processed files for legal documentation and case archiving.",
     },
   ];
 
@@ -65,7 +54,6 @@ export default function PiVoxPage() {
         clockworkVideo="/hero-vox-2.mp4"
         timelineSteps={timelineSteps}
       />
-      <ScrollClockwork slides={clockworkSlides} />
       <Footer />
     </div>
   );
