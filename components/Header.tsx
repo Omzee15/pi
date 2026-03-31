@@ -2,6 +2,7 @@
 import React from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { ChevronDown, Menu, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useHeaderLogo } from '@/lib/header-logo-context';
@@ -10,6 +11,8 @@ import gsap from 'gsap';
 export function Header() {
 	const [productsOpen, setProductsOpen] = React.useState(false);
 	const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false);
+	const pathname = usePathname();
+	const isHomepage = pathname === '/';
 	useHeaderLogo(); // keep context wired (provider still wraps the app)
 
 	// GSAP refs
@@ -28,6 +31,14 @@ export function Header() {
 		const header = headerRef.current;
 
 		if (!logoImg || !introLogo || !introBg || !header) return;
+
+		// Skip animation on non-homepage routes
+		if (!isHomepage) {
+			gsap.set(logoImg, { opacity: 1 });
+			gsap.set(introBg, { autoAlpha: 0 });
+			gsap.set(introLogo, { autoAlpha: 0 });
+			return;
+		}
 
 		// Force scroll to top so the animation always starts from position 0
 		window.scrollTo({ top: 0, behavior: 'instant' });
@@ -87,7 +98,7 @@ export function Header() {
 			window.removeEventListener('scroll', handleScroll);
 			tl.kill();
 		};
-	}, []);
+	}, [isHomepage]);
 
 	return (
 		<>
@@ -139,7 +150,7 @@ export function Header() {
 							width={120}
 							height={40}
 							className="h-8 w-auto dark:invert"
-							style={{ opacity: 0 }}
+							style={{ opacity: isHomepage ? 0 : 1 }}
 						/>
 					</Link>
 
